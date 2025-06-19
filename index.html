@@ -46,7 +46,6 @@ const input = document.getElementById('input');
 
 let rudeCount = 0;
 let awaitingConsent = false;
-
 let memory = JSON.parse(localStorage.getItem("chat_memory")) || {};
 
 function getRandom(arr) {
@@ -55,7 +54,16 @@ function getRandom(arr) {
 
 function getResponse(msg) {
   msg = msg.toLowerCase();
-  // 記憶の削除（個別）
+
+  // 🎉 バレンタインデー演出
+  const today = new Date();
+  const month = today.getMonth() + 1;
+  const date = today.getDate();
+  if ((msg.includes("バレンタイン") || msg.includes("ハッピーバレンタイン")) && month === 2 && date === 14) {
+    return "あ…ありがとうございます……でもチョコは遠慮しておきます…アレルギーなので…お気持ちだけで十分です…";
+  }
+
+  // 記憶削除系
   if (msg.startsWith("忘れて：")) {
     const key = msg.replace("忘れて：", "").trim();
     if (memory[key]) {
@@ -66,65 +74,53 @@ function getResponse(msg) {
       return `${key}の記憶は見つかりませんでした。`;
     }
   }
-
-  // 記憶の全削除
   if (msg === "記憶を全部消して") {
     memory = {};
     localStorage.removeItem("chat_memory");
     return "すべての記憶を削除しました。";
   }
-
-  // 記憶の一覧表示
   if (msg === "記憶している内容を見せて") {
     const keys = Object.keys(memory);
-    if (keys.length === 0) {
-      return "今は何も覚えていません。";
-    }
-    let list = keys.map(key => `${key}：${memory[key]}`).join("\n");
-    return `現在の記憶は以下の通りです：\n${list}`;
+    if (keys.length === 0) return "今は何も覚えていません。";
+    return "現在の記憶は以下の通りです：\n" + keys.map(k => `${k}：${memory[k]}`).join("\n");
   }
 
-
-  // 教育モード
+  // 記憶追加
   if (msg.startsWith("覚えて：")) {
     const [key, value] = msg.replace("覚えて：", "").split("は");
     if (key && value) {
       memory[key.trim()] = value.trim();
       localStorage.setItem("chat_memory", JSON.stringify(memory));
       return `${key.trim()}は${value.trim()}ですね。覚えました。`;
-    } else {
-      return "「覚えて：〇〇は△△」の形式で入力してください。";
     }
+    return "「覚えて：〇〇は△△」の形式で入力してください。";
   }
 
-  // 記憶チェック
+  // 記憶参照
   for (let key in memory) {
-    if (msg.includes(key)) {
-      return memory[key];
-    }
+    if (msg.includes(key)) return memory[key];
   }
 
-  // 同意待ち返答
+  // 同意処理
   if (awaitingConsent) {
     awaitingConsent = false;
-    if (msg.includes("はい")) {
-      return "わかりました。担当に連絡しておきますね。";
-    }
-    if (msg.includes("いいえ")) {
-      return "承知しました。何かあればまたお知らせください。";
-    }
+    if (msg.includes("はい")) return "わかりました。担当に連絡しておきますね。";
+    if (msg.includes("いいえ")) return "承知しました。何かあればまたお知らせください。";
   }
 
-  const isRude = msg.includes("ケツ出せ") || msg.includes("脱げ");
-  const isPolite = msg.includes("お願い") || msg.includes("頼む");
-
+  // 🚨 セクハラ・暴言検出
+  const isRude = /(ケツ|脱げ|舐めろ|死ね|消えろ|ボロン|ち○|まん|ぱんつ)/.test(msg);
+  const isPolite = /(お願い|頼む)/.test(msg);
   if (isRude) {
     rudeCount++;
     if (isPolite) {
       return "うっ……//すいませんが…そういうお願いはちょっと………うちそういうサービスじゃないので…";
     }
     if (rudeCount >= 5) {
-      return "無理ですってば…本当にやめてください…セクハラですよそれ…";
+      setTimeout(() => {
+        window.location.href = "keibi.html";
+      }, 1500);
+      return "無理ですってば…本当にやめてください…警備の者を呼びます…";
     }
     return getRandom([
       "すいませんが…そのような対応は…ちょっと…",
@@ -133,46 +129,23 @@ function getResponse(msg) {
     ]);
   }
 
+  // その他の返答
   if (msg.includes("不具合") || msg.includes("バグ")) {
     awaitingConsent = true;
     return getRandom([
-      "すいませんが…不具合は専門外でして…メンテナンスの担当者に代わりましょうか？\n→ よろしければ「はい」か「いいえ」でお答えください。",
-      "バグのことはあまり詳しくなくて…すみません。担当者代わりましょうか？\n→「はい」か「いいえ」でどうぞ。",
-      "問題があったら、メンテナンスの担当者にお願いします。\n→「はい」か「いいえ」でお願いします。"
+      "不具合は専門外でして…担当者に代わりましょうか？\n→「はい」か「いいえ」でお答えください。",
+      "バグのことはあまり詳しくなくて…担当にお繋ぎしましょうか？\n→「はい」か「いいえ」でどうぞ。",
     ]);
   }
 
-  if (msg.includes("お願い") || msg.includes("頼んだ") || msg.includes("やって")) {
-    return getRandom(["はい…喜んで", "わかりました…喜んで…", "任せてください"]);
+  if (msg.includes("バズモード")) {
+    return "バズモードは推し絵師へのコメントやいいねで演出が変化します。詳細は試してみてください。";
   }
 
-  if (msg.includes("めんどくさい")) {
-    return getRandom(["そういわれましても…", "そのお気持ちは…分かりますが…", "…そうですか……"]);
-  }
-
-  if (msg.includes("趣味")) {
-    return getRandom([
-      "趣味は筋トレと料理ですけど…聞く必要ございますでしょうか…？",
-      "料理でしょうか？僕得意ですよ。",
-      "ジムに通ってます…"
-    ]);
-  }
-
-  if (msg.includes("チョコ") || msg.includes("チョコレート")) {
-    return "チョコはすいませんが…アレルギーなんですよ";
-  }
-
-  if (msg.includes("ボロン") || msg.includes("ぼろん")) {
-    return "…お客様??…何を…いったいなさっているんですか…？";
-  }
-
-  if (msg.includes("働いてる") || msg.includes("仕事")) {
-    return getRandom(["…………", "ハハハ…", "……はあ"]);
-  }
-
-  if (msg.includes("バズもーど") || msg.includes("バズモード")) {
-    return "バズモードの使い方ですね、バズモードでできることはあなた自身の投稿と推し絵師へのコメント、またいいねを連打する事によって低確率で推しの投稿がバズります。あと特定の絵師さんの名前を記入された際は特殊な投稿などが見られたり、演出があったりします。他にも知りたいことがありましたらなんでもお聞きください。";
-  }
+  if (msg.includes("おはよう")) return "おはようございます。";
+  if (msg.includes("おやすみ")) return "おやすみなさい。";
+  if (msg.includes("趣味")) return "趣味は筋トレと料理です。料理は…下手ですが。";
+  if (msg.includes("チョコ")) return "チョコはアレルギーなので…お気持ちだけで。";
 
   return "どうも、絵師ファンライターのサポート窓口。こちら担当の夕介佐歩です。";
 }
@@ -201,8 +174,7 @@ input.addEventListener('keydown', e => {
   if (e.key === 'Enter') sendMessage();
 });
 
-// 初期メッセージ
-appendMessage('夕介佐歩: どうも、絵師ファンライターのサポート窓口。こちら担当の夕介佐歩です。操作や投稿などで分らないことがございましたらなんでもお聞きください。', 'bot');
+appendMessage('夕介佐歩: どうも、絵師ファンライターのサポート窓口。こちら担当の夕介佐歩です。操作や投稿などで分からないことがあれば、なんでもどうぞ。', 'bot');
 </script>
 </body>
 </html>
