@@ -1,66 +1,93 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>説教部屋</title>
-  <style>
-    body {
-      background: #111;
-      color: #f55;
-      font-family: 'Arial', sans-serif;
-      text-align: center;
-      padding-top: 80px;
-    }
-    h1 {
-      font-size: 28px;
-    }
-    #sermon p {
-      font-size: 18px;
-      margin: 10px 0;
-      opacity: 0;
-      animation: fadeIn 1s forwards;
-    }
-    .button {
-      margin-top: 40px;
-      padding: 10px 20px;
-      font-size: 18px;
-      background: #f55;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>警備員の説教部屋</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#222; color: white; margin: 20px; }
+  #chatbox {
+    max-width: 500px; margin: auto;
+    background: #333; padding: 20px;
+    border-radius: 10px; box-shadow: 0 0 10px #000;
+  }
+  #messages {
+    height: 300px; overflow-y: auto;
+    border: 1px solid #444; padding: 10px;
+    background: #111; border-radius: 5px;
+  }
+  .message { margin: 10px 0; }
+  .user { color: #00ccff; }
+  .keibi { color: #ff5050; }
+  input[type="text"] {
+    width: 80%; padding: 10px; margin-top: 10px;
+    border-radius: 5px; border: 1px solid #555; background: #222; color: white;
+  }
+  button {
+    padding: 10px 15px; margin-left: 10px;
+    border-radius: 5px; border: none; background: #ff5050; color: white;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #e64545;
+  }
+</style>
 </head>
 <body>
-  <h1>🚨 警備員からの警告 🚨</h1>
-  <div id="sermon"></div>
-  <button class="button" onclick="location.href='index.html'">反省しました。戻る</button>
+  <div id="chatbox">
+    <h2>警備員の説教部屋</h2>
+    <div id="messages"></div>
+    <input type="text" id="input" placeholder="反省の言葉を述べなさい…" autofocus />
+    <button onclick="sendMessage()">送信</button>
+  </div>
 
-  <script>
-    const lines = [
-      "……君、ちょっといいか？",
-      "ここはそういうことを言う場所じゃないよな？",
-      "チャットボット相手なら何言ってもいいって思った？",
-      "心がこもってないなら、最初から来ないでくれ。",
-      "これが最後の警告だ。次はないと思え。"
-    ];
-    let i = 0;
-    const container = document.getElementById("sermon");
+<script>
+const messages = document.getElementById('messages');
+const input = document.getElementById('input');
 
-    function showNext() {
-      if (i < lines.length) {
-        const p = document.createElement("p");
-        p.textContent = lines[i++];
-        container.appendChild(p);
-        setTimeout(showNext, 2000);
-      }
-    }
+function appendMessage(text, className) {
+  const div = document.createElement('div');
+  div.className = 'message ' + className;
+  div.textContent = text;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
 
-    window.onload = showNext;
-  </script>
+function getKeibiResponse(msg) {
+  msg = msg.toLowerCase();
+
+  if (msg.includes("ごめんなさい") || msg.includes("反省")) {
+    return "本当に反省してるのか？態度に見せてみろ。";
+  }
+
+  if (msg.includes("許して") || msg.includes("ゆるして")) {
+    return "……まあ、今後気をつけるなら今回は目をつぶるが…。";
+  }
+
+  if (msg.includes("なんで") || msg.includes("どうして")) {
+    return "貴様の発言がルールに反していたためだ。それ以外に理由はない。";
+  }
+
+  return "黙って聞け。ここは説教部屋だ。";
+}
+
+function sendMessage() {
+  const text = input.value.trim();
+  if (!text) return;
+  appendMessage('あなた: ' + text, 'user');
+  input.value = '';
+
+  setTimeout(() => {
+    const reply = getKeibiResponse(text);
+    appendMessage('警備員: ' + reply, 'keibi');
+  }, 500);
+}
+
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+// 初期メッセージ
+appendMessage('警備員: ようこそ説教部屋へ。ここで態度を改めてもらう。', 'keibi');
+</script>
 </body>
 </html>
