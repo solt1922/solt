@@ -54,21 +54,52 @@ function appendMessage(text, className) {
 
 function getKeibiResponse(msg) {
   msg = msg.toLowerCase();
-
+  
   if (msg.includes("ごめんなさい") || msg.includes("反省")) {
-    return "本当に反省してるのか？態度に見せてみろ。";
+    return getRandom([
+      "反省してるなら態度で示してもらおうか。",
+      "反省文を3枚書いて提出だ。",
+      "その程度の謝罪では済まされないぞ。",
+      "声が小さい！もっと大きく反省の意を表せ！"
+    ]);
   }
 
   if (msg.includes("許して") || msg.includes("ゆるして")) {
-    return "……まあ、今後気をつけるなら今回は目をつぶるが…。";
+    return getRandom([
+      "簡単に許されると思うなよ？",
+      "……まあ、今回は見逃してやろう。",
+      "許しを乞う前にやるべきことがあるはずだ。",
+      "条件付きでなら許す。次はないと思え。"
+    ]);
   }
 
   if (msg.includes("なんで") || msg.includes("どうして")) {
-    return "貴様の発言がルールに反していたためだ。それ以外に理由はない。";
+    return getRandom([
+      "己の行動をよく思い出してみろ。",
+      "理由は貴様の言動すべてにある。",
+      "規則に従わぬ者に理由など不要だ。",
+      "言わせるな…恥を知れ。"
+    ]);
   }
 
-  return "黙って聞け。ここは説教部屋だ。";
+  if (msg.includes("黙れ") || msg.includes("うるさい")) {
+    return getRandom([
+      "反省する気がないようだな？追加で30分だ。",
+      "敬意の欠片もないな……やり直しだ。",
+      "口答えか？よし、説教2倍モード突入だ。",
+      "貴様、今なんと言った？"
+    ]);
+  }
+
+  return getRandom([
+    "黙って聞け。ここは説教部屋だ。",
+    "余計なことは言うな。反省だけしていろ。",
+    "こっちは暇じゃない。早く改心しろ。",
+    "おしゃべりの時間じゃないぞ。真面目にやれ。",
+    "まずは落ち着け。深呼吸からだ。"
+  ]);
 }
+
 
 function sendMessage() {
   const text = input.value.trim();
