@@ -81,6 +81,17 @@ function getKeibiResponse(msg) {
       "声が小さい！もっと大きく反省の意を表せ！"
     ]);
   }
+  // 下ネタ・暴言に対する対応
+  const inappropriateWords = ["ち○こ", "ま○こ", "殺す", "死ね", "ぶっ殺す", "変態", "ボロン", "ケツ", "脱げ", "舐めろ"];
+  if (inappropriateWords.some(word => msg.includes(word))) {
+    return getRandom([
+      "……お前、今なんつった？",
+      "その口、縫い合わせるぞ。",
+      "今すぐその下品な言葉を詫びろ。説教延長だ。",
+      "調子に乗るなよ……本気で怒るぞ。",
+      "反省以前の問題だな。態度から叩き直してやる。"
+    ]);
+  }
 
   if (msg.includes("許して") || msg.includes("ゆるして")) {
     return getRandom([
