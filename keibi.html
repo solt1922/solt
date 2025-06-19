@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>説教部屋</title>
+  <style>
+    body {
+      background: #111;
+      color: #f55;
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      padding-top: 80px;
+    }
+    h1 {
+      font-size: 28px;
+    }
+    #sermon p {
+      font-size: 18px;
+      margin: 10px 0;
+      opacity: 0;
+      animation: fadeIn 1s forwards;
+    }
+    .button {
+      margin-top: 40px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background: #f55;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🚨 警備員からの警告 🚨</h1>
+  <div id="sermon"></div>
+  <button class="button" onclick="location.href='index.html'">反省しました。戻る</button>
+
+  <script>
+    const lines = [
+      "……君、ちょっといいか？",
+      "ここはそういうことを言う場所じゃないよな？",
+      "チャットボット相手なら何言ってもいいって思った？",
+      "心がこもってないなら、最初から来ないでくれ。",
+      "これが最後の警告だ。次はないと思え。"
+    ];
+    let i = 0;
+    const container = document.getElementById("sermon");
+
+    function showNext() {
+      if (i < lines.length) {
+        const p = document.createElement("p");
+        p.textContent = lines[i++];
+        container.appendChild(p);
+        setTimeout(showNext, 2000);
+      }
+    }
+
+    window.onload = showNext;
+  </script>
+</body>
+</html>
