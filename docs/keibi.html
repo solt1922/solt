@@ -23,12 +23,20 @@
     border-radius: 5px; border: 1px solid #555; background: #222; color: white;
   }
   button {
-    padding: 10px 15px; margin-left: 10px;
+    padding: 10px 15px; margin: 10px 5px 0 0;
     border-radius: 5px; border: none; background: #ff5050; color: white;
     cursor: pointer;
   }
   button:hover {
     background: #e64545;
+  }
+  #reflection-form {
+    margin-top: 15px;
+  }
+  textarea {
+    width: 100%; border-radius: 5px;
+    background: #222; color: white;
+    padding: 10px; border: 1px solid #555;
   }
 </style>
 </head>
@@ -38,6 +46,12 @@
     <div id="messages"></div>
     <input type="text" id="input" placeholder="反省の言葉を述べなさい…" autofocus />
     <button onclick="sendMessage()">送信</button>
+    <button onclick="showReflectionForm()">📝 反省文を書く</button>
+
+    <div id="reflection-form" style="display: none;">
+      <textarea id="reflection-text" rows="4" placeholder="ここに反省文を書きなさい…"></textarea>
+      <button onclick="submitReflection()">提出する</button>
+    </div>
   </div>
 
 <script>
@@ -52,9 +66,13 @@ function appendMessage(text, className) {
   messages.scrollTop = messages.scrollHeight;
 }
 
+function getRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 function getKeibiResponse(msg) {
   msg = msg.toLowerCase();
-  
+
   if (msg.includes("ごめんなさい") || msg.includes("反省")) {
     return getRandom([
       "反省してるなら態度で示してもらおうか。",
@@ -100,7 +118,6 @@ function getKeibiResponse(msg) {
   ]);
 }
 
-
 function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
@@ -111,6 +128,32 @@ function sendMessage() {
     const reply = getKeibiResponse(text);
     appendMessage('警備員: ' + reply, 'keibi');
   }, 500);
+}
+
+function showReflectionForm() {
+  document.getElementById('reflection-form').style.display = 'block';
+}
+
+function submitReflection() {
+  const text = document.getElementById('reflection-text').value.trim();
+  if (!text) {
+    alert("反省文が空です！");
+    return;
+  }
+
+  appendMessage("あなた（反省文）: " + text, 'user');
+  document.getElementById('reflection-text').value = '';
+  document.getElementById('reflection-form').style.display = 'none';
+
+  setTimeout(() => {
+    const responses = [
+      "ふむ、よく書けている。今回は見逃してやろう。",
+      "その反省文ではまだ足りん。もっと真剣に書け！",
+      "……うむ。その気持ちがあるならよし。",
+      "だいぶ反省の色は見えたな。次は気をつけろ。"
+    ];
+    appendMessage("警備員: " + getRandom(responses), 'keibi');
+  }, 700);
 }
 
 input.addEventListener('keydown', e => {
