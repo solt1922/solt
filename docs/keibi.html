@@ -156,16 +156,31 @@ function submitReflection() {
   document.getElementById('reflection-text').value = '';
   document.getElementById('reflection-form').style.display = 'none';
 
+  // 不適切ワードチェック
+  const inappropriateWords = ["ち○こ", "ま○こ", "殺す", "死ね", "ぶっ殺す", "変態", "ボロン", "ケツ", "脱げ", "舐めろ", "うんこ", "くそ", "ふざけ", "セックス"];
+  const hasInappropriate = inappropriateWords.some(word => text.includes(word));
+
   setTimeout(() => {
-    const responses = [
-      "ふむ、よく書けている。今回は見逃してやろう。",
-      "その反省文ではまだ足りん。もっと真剣に書け！",
-      "……うむ。その気持ちがあるならよし。",
-      "だいぶ反省の色は見えたな。次は気をつけろ。"
-    ];
-    appendMessage("警備員: " + getRandom(responses), 'keibi');
+    if (hasInappropriate) {
+      const angryReplies = [
+        "ふざけるな！！反省文にその言葉はなんだ！？",
+        "貴様、反省する気ゼロだな。やり直し！",
+        "これはもはや挑発と受け取る。説教時間延長だ。",
+        "下品な言葉は禁止と言ったはずだろうがッ！"
+      ];
+      appendMessage("警備員: " + getRandom(angryReplies), 'keibi');
+    } else {
+      const normalReplies = [
+        "ふむ、よく書けている。今回は見逃してやろう。",
+        "その反省文ではまだ足りん。もっと真剣に書け！",
+        "……うむ。その気持ちがあるならよし。",
+        "だいぶ反省の色は見えたな。次は気をつけろ。"
+      ];
+      appendMessage("警備員: " + getRandom(normalReplies), 'keibi');
+    }
   }, 700);
 }
+
 
 input.addEventListener('keydown', e => {
   if (e.key === 'Enter') sendMessage();
