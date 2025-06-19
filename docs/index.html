@@ -52,10 +52,18 @@ function getRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+function appendMessage(text, className) {
+  const div = document.createElement('div');
+  div.className = 'message ' + className;
+  div.textContent = text;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
 function getResponse(msg) {
   msg = msg.toLowerCase();
 
-  // 🎉 バレンタインデー演出
+  // 🎉 バレンタイン演出
   const today = new Date();
   const month = today.getMonth() + 1;
   const date = today.getDate();
@@ -101,35 +109,48 @@ function getResponse(msg) {
     if (msg.includes(key)) return memory[key];
   }
 
-  // 同意処理
+  // 同意確認処理
   if (awaitingConsent) {
     awaitingConsent = false;
     if (msg.includes("はい")) return "わかりました。担当に連絡しておきますね。";
     if (msg.includes("いいえ")) return "承知しました。何かあればまたお知らせください。";
   }
 
-  // 🚨 セクハラ・暴言検出
-  const isRude = /(ケツ|脱げ|舐めろ|死ね|消えろ|ボロン|ち○|まん|ぱんつ)/.test(msg);
-  const isPolite = /(お願い|頼む)/.test(msg);
-  if (isRude) {
+  // 下ネタ・暴言検出
+  const vulgarWords = ["ち○こ", "ま○こ", "ボロン", "ケツ", "脱げ", "舐めろ", "セックス", "乳", "しこ", "勃起"];
+  const offensiveWords = ["殺す", "死ね", "ぶっ殺す", "変態", "黙れ", "くそ", "うんこ", "ざけんな"];
+
+  const isVulgar = vulgarWords.some(word => msg.includes(word));
+  const isOffensive = offensiveWords.some(word => msg.includes(word));
+
+  if (isVulgar || isOffensive) {
     rudeCount++;
-    if (isPolite) {
-      return "うっ……//すいませんが…そういうお願いはちょっと………うちそういうサービスじゃないので…";
-    }
+
     if (rudeCount >= 5) {
       setTimeout(() => {
         window.location.href = "keibi.html";
       }, 1500);
       return "無理ですってば…本当にやめてください…警備の者を呼びます…";
     }
-    return getRandom([
-      "すいませんが…そのような対応は…ちょっと…",
-      "そういうのは困ります…",
-      "やめてください、お願いします…"
-    ]);
+
+    if (isVulgar) {
+      return getRandom([
+        "……お客様？下品な発言はご遠慮ください…",
+        "ちょ…そういうのは困ります……ほんとに……",
+        "不適切な発言は控えてください…次は警備に通報しますよ…？"
+      ]);
+    }
+
+    if (isOffensive) {
+      return getRandom([
+        "すみませんが、そのようなお言葉はお控えください。",
+        "……今の発言は記録に残りますよ？",
+        "失礼ですが、それはやりすぎです。警備員に引き渡します。"
+      ]);
+    }
   }
 
-  // その他の返答
+  // その他
   if (msg.includes("不具合") || msg.includes("バグ")) {
     awaitingConsent = true;
     return getRandom([
@@ -148,14 +169,6 @@ function getResponse(msg) {
   if (msg.includes("チョコ")) return "チョコはアレルギーなので…お気持ちだけで。";
 
   return "どうも、絵師ファンライターのサポート窓口。こちら担当の夕介佐歩です。";
-}
-
-function appendMessage(text, className) {
-  const div = document.createElement('div');
-  div.className = 'message ' + className;
-  div.textContent = text;
-  messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
 }
 
 function sendMessage() {
