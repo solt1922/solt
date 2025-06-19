@@ -73,23 +73,36 @@ function getRandom(arr) {
 function getKeibiResponse(msg) {
   msg = msg.toLowerCase();
 
+  const vulgarWords = ["ち○こ", "ま○こ", "ボロン", "ケツ", "脱げ", "舐めろ", "セックス", "乳", "勃起"];
+  const offensiveWords = ["殺す", "死ね", "ぶっ殺す", "変態", "くそ", "ふざけ", "うんこ", "ざけんな"];
+
+  const isVulgar = vulgarWords.some(word => msg.includes(word));
+  const isOffensive = offensiveWords.some(word => msg.includes(word));
+
+  if (isVulgar) {
+    return getRandom([
+      "……下品にも程があるぞ。",
+      "そういう言葉は口にするなって言ってるだろうが！",
+      "お前の語彙力が心配になるぞ、マジで。",
+      "そんな発言をここで吐くな、恥を知れ。"
+    ]);
+  }
+
+  if (isOffensive) {
+    return getRandom([
+      "貴様、誰に向かって口を利いている！",
+      "暴言は即アウト。説教追加な。",
+      "お前、またやったな？根性叩き直すぞ。",
+      "その暴言、録音済みだ。覚悟しろ。"
+    ]);
+  }
+
   if (msg.includes("ごめんなさい") || msg.includes("反省")) {
     return getRandom([
       "反省してるなら態度で示してもらおうか。",
       "反省文を3枚書いて提出だ。",
       "その程度の謝罪では済まされないぞ。",
       "声が小さい！もっと大きく反省の意を表せ！"
-    ]);
-  }
-  // 下ネタ・暴言に対する対応
-  const inappropriateWords = ["ち○こ", "ま○こ", "殺す", "死ね", "ぶっ殺す", "変態", "ボロン", "ケツ", "脱げ", "舐めろ"];
-  if (inappropriateWords.some(word => msg.includes(word))) {
-    return getRandom([
-      "……お前、今なんつった？",
-      "その口、縫い合わせるぞ。",
-      "今すぐその下品な言葉を詫びろ。説教延長だ。",
-      "調子に乗るなよ……本気で怒るぞ。",
-      "反省以前の問題だな。態度から叩き直してやる。"
     ]);
   }
 
@@ -156,31 +169,37 @@ function submitReflection() {
   document.getElementById('reflection-text').value = '';
   document.getElementById('reflection-form').style.display = 'none';
 
-  // 不適切ワードチェック
-  const inappropriateWords = ["ち○こ", "ま○こ", "殺す", "死ね", "ぶっ殺す", "変態", "ボロン", "ケツ", "脱げ", "舐めろ", "うんこ", "くそ", "ふざけ", "セックス"];
-  const hasInappropriate = inappropriateWords.some(word => text.includes(word));
+  const vulgarWords = ["ち○こ", "ま○こ", "ボロン", "ケツ", "脱げ", "舐めろ", "セックス", "乳", "勃起"];
+  const offensiveWords = ["殺す", "死ね", "ぶっ殺す", "変態", "くそ", "ふざけ", "うんこ", "ざけんな"];
+
+  const isVulgar = vulgarWords.some(word => text.includes(word));
+  const isOffensive = offensiveWords.some(word => text.includes(word));
 
   setTimeout(() => {
-    if (hasInappropriate) {
-      const angryReplies = [
-        "ふざけるな！！反省文にその言葉はなんだ！？",
-        "貴様、反省する気ゼロだな。やり直し！",
-        "これはもはや挑発と受け取る。説教時間延長だ。",
-        "下品な言葉は禁止と言ったはずだろうがッ！"
-      ];
-      appendMessage("警備員: " + getRandom(angryReplies), 'keibi');
+    if (isVulgar) {
+      appendMessage("警備員: " + getRandom([
+        "おい、その反省文……下ネタ書く場所じゃねぇぞ！",
+        "内容が不適切だ。ふざけてるのか？",
+        "反省文を下品な言葉で汚すな。",
+        "ここは下ネタ提出箱じゃない。やり直せ。"
+      ]), 'keibi');
+    } else if (isOffensive) {
+      appendMessage("警備員: " + getRandom([
+        "暴言反省文！？ふざけるな！",
+        "謝罪する気があるとは思えん。説教倍な。",
+        "その文章、挑発だと判断する。処理追加だ。",
+        "暴言を反省文に混ぜるな。即却下。"
+      ]), 'keibi');
     } else {
-      const normalReplies = [
+      appendMessage("警備員: " + getRandom([
         "ふむ、よく書けている。今回は見逃してやろう。",
         "その反省文ではまだ足りん。もっと真剣に書け！",
         "……うむ。その気持ちがあるならよし。",
         "だいぶ反省の色は見えたな。次は気をつけろ。"
-      ];
-      appendMessage("警備員: " + getRandom(normalReplies), 'keibi');
+      ]), 'keibi');
     }
   }, 700);
 }
-
 
 input.addEventListener('keydown', e => {
   if (e.key === 'Enter') sendMessage();
