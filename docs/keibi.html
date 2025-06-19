@@ -73,7 +73,7 @@ function getRandom(arr) {
 function getKeibiResponse(msg) {
   msg = msg.toLowerCase();
 
-  const vulgarWords = ["ち○こ", "ま○こ", "ボロン", "ケツ", "脱げ", "舐めろ", "セックス", "乳", "勃起"];
+  const vulgarWords = ["ち○こ", "ま○こ", "ボロン", "ケツ", "脱げ", "舐めろ", "セックス", "乳", "勃起","アナル"];
   const offensiveWords = ["殺す", "死ね", "ぶっ殺す", "変態", "くそ", "ふざけ", "うんこ", "ざけんな"];
 
   const isVulgar = vulgarWords.some(word => msg.includes(word));
@@ -169,7 +169,7 @@ function submitReflection() {
   document.getElementById('reflection-text').value = '';
   document.getElementById('reflection-form').style.display = 'none';
 
-  const vulgarWords = ["ち○こ", "ま○こ", "ボロン", "ケツ", "脱げ", "舐めろ", "セックス", "乳", "勃起"];
+  const vulgarWords = ["ち○こ", "ま○こ", "ボロン", "ケツ", "脱げ", "舐めろ", "セックス", "乳", "勃起", "アナル"];
   const offensiveWords = ["殺す", "死ね", "ぶっ殺す", "変態", "くそ", "ふざけ", "うんこ", "ざけんな"];
 
   const isVulgar = vulgarWords.some(word => text.includes(word));
