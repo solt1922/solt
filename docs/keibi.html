@@ -69,12 +69,34 @@ function appendMessage(text, className) {
 function getRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
+  // 単語ごとに怒り返答を用意
+  const greetingRepliesMap = {
+    "ねえねえ": [
+      "ねえねえだと？ふざけるな、ちゃんと反省する気があるのかお前は",
+      "そんな軽い呼び方をするんでない…反省しろ"
+    ],
+    "警備員さん": [
+      "…………癪に障る",
+      "俺はどうでもいいからさっさと反省文を書け"
+    ],
+    "こんにちは": [
+      "今は挨拶してる暇じゃないだろちゃんと反省してくれ……",
+      "こんにちは……って能天気すぎるだろお前……"
+    ],
+    "こんばんわ": [
+      "夜でも説教は終わらないぞ、さっさと反省文を書くんだ"
+    ],
+    "また会いましたね": [
+      "また会ったってことは反省してないってことなんだが…改心したんじゃなかったのか…貴様…",
+      "またお前か……もう何回目なんだよ………こっちも遊びじゃないんだ"
+    ],
+  };
 
 function getKeibiResponse(msg) {
   msg = msg.toLowerCase();
 
-  const vulgarWords = ["ち○こ", "ま○こ", "ボロン", "ケツ", "脱げ", "舐めろ", "セックス", "乳", "勃起","アナル"];
-  const offensiveWords = ["殺す", "死ね", "ぶっ殺す", "変態", "くそ", "ふざけ", "うんこ", "ざけんな"];
+  const vulgarWords = ["ち○こ", "ま○こ", "ボロン", "ケツ", "脱げ", "舐めろ", "セックス", "乳", "勃起","アナル", "肉便器", "性奴隷"];
+  const offensiveWords = ["殺す", "死ね", "ぶっ殺す", "変態", "くそ", "ふざけ", "うんこ", "ざけんな", "ボケ", "カス", "野糞"];
 
   const isVulgar = vulgarWords.some(word => msg.includes(word));
   const isOffensive = offensiveWords.some(word => msg.includes(word));
