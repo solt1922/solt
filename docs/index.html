@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>夕介佐歩チャット</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#f0f0f0; margin: 20px; }
+  #chatbox {
+    max-width: 500px; margin: auto;
+    background: white; padding: 20px;
+    border-radius: 10px; box-shadow: 0 0 10px #ccc;
+  }
+  #messages {
+    height: 300px; overflow-y: auto;
+    border: 1px solid #ccc; padding: 10px;
+    background: #fafafa; border-radius: 5px;
+  }
+  .message { margin: 10px 0; }
+  .user { color: blue; }
+  .bot { color: green; }
+  input[type="text"] {
+    width: 80%; padding: 10px; margin-top: 10px;
+    border-radius: 5px; border: 1px solid #ccc;
+  }
+  button {
+    padding: 10px 15px; margin-left: 10px;
+    border-radius: 5px; border: none; background: #4CAF50; color: white;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #45a049;
+  }
+</style>
+</head>
+<body>
+  <div id="chatbox">
+    <h2>夕介佐歩チャット</h2>
+    <div id="messages"></div>
+    <input type="text" id="input" placeholder="メッセージを入力…" autofocus />
+    <button onclick="sendMessage()">送信</button>
+  </div>
+
+<script>
+const messages = document.getElementById('messages');
+const input = document.getElementById('input');
+
+let rudeCount = 0;
+let awaitingConsent = false;
+let memory = JSON.parse(localStorage.getItem("chat_memory")) || {};
+
+function getRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function getResponse(msg) {
+  msg = msg.toLowerCase();
+
+  // 🎉 バレンタインデー演出
+  const today = new Date();
+  const month = today.getMonth() + 1;
+  const date = today.getDate();
+  if ((msg.includes("バレンタイン") || msg.includes("ハッピーバレンタイン")) && month === 2 && date === 14) {
+    return "あ…ありがとうございます……でもチョコは遠慮しておきます…アレルギーなので…お気持ちだけで十分です…";
+  }
+
+  // 記憶削除系
+  if (msg.startsWith("忘れて：")) {
+    const key = msg.replace("忘れて：", "").trim();
+    if (memory[key]) {
+      delete memory[key];
+      localStorage.setItem("chat_memory", JSON.stringify(memory));
+      return `${key}の記憶は削除しました。`;
+    } else {
+      return `${key}の記憶は見つかりませんでした。`;
+    }
+  }
+  if (msg === "記憶を全部消して") {
+    memory = {};
+    localStorage.removeItem("chat_memory");
+    return "すべての記憶を削除しました。";
+  }
+  if (msg === "記憶している内容を見せて") {
+    const keys = Object.keys(memory);
+    if (keys.length === 0) return "今は何も覚えていません。";
+    return "現在の記憶は以下の通りです：\n" + keys.map(k => `${k}：${memory[k]}`).join("\n");
+  }
+
+  // 記憶追加
+  if (msg.startsWith("覚えて：")) {
+    const [key, value] = msg.replace("覚えて：", "").split("は");
+    if (key && value) {
+      memory[key.trim()] = value.trim();
+      localStorage.setItem("chat_memory", JSON.stringify(memory));
+      return `${key.trim()}は${value.trim()}ですね。覚えました。`;
+    }
+    return "「覚えて：〇〇は△△」の形式で入力してください。";
+  }
+
+  // 記憶参照
+  for (let key in memory) {
+    if (msg.includes(key)) return memory[key];
+  }
+
+  // 同意処理
+  if (awaitingConsent) {
+    awaitingConsent = false;
+    if (msg.includes("はい")) return "わかりました。担当に連絡しておきますね。";
+    if (msg.includes("いいえ")) return "承知しました。何かあればまたお知らせください。";
+  }
+
+  // 🚨 セクハラ・暴言検出
+  const isRude = /(ケツ|脱げ|舐めろ|死ね|消えろ|ボロン|ち○|まん|ぱんつ)/.test(msg);
+  const isPolite = /(お願い|頼む)/.test(msg);
+  if (isRude) {
+    rudeCount++;
+    if (isPolite) {
+      return "うっ……//すいませんが…そういうお願いはちょっと………うちそういうサービスじゃないので…";
+    }
+    if (rudeCount >= 5) {
+      setTimeout(() => {
+        window.location.href = "keibi.html";
+      }, 1500);
+      return "無理ですってば…本当にやめてください…警備の者を呼びます…";
+    }
+    return getRandom([
+      "すいませんが…そのような対応は…ちょっと…",
+      "そういうのは困ります…",
+      "やめてください、お願いします…"
+    ]);
+  }
+
+  // その他の返答
+  if (msg.includes("不具合") || msg.includes("バグ")) {
+    awaitingConsent = true;
+    return getRandom([
+      "不具合は専門外でして…担当者に代わりましょうか？\n→「はい」か「いいえ」でお答えください。",
+      "バグのことはあまり詳しくなくて…担当にお繋ぎしましょうか？\n→「はい」か「いいえ」でどうぞ。",
+    ]);
+  }
+
+  if (msg.includes("バズモード")) {
+    return "バズモードは推し絵師へのコメントやいいねで演出が変化します。詳細は試してみてください。";
+  }
+
+  if (msg.includes("おはよう")) return "おはようございます。";
+  if (msg.includes("おやすみ")) return "おやすみなさい。";
+  if (msg.includes("趣味")) return "趣味は筋トレと料理です。料理は…下手ですが。";
+  if (msg.includes("チョコ")) return "チョコはアレルギーなので…お気持ちだけで。";
+
+  return "どうも、絵師ファンライターのサポート窓口。こちら担当の夕介佐歩です。";
+}
+
+function appendMessage(text, className) {
+  const div = document.createElement('div');
+  div.className = 'message ' + className;
+  div.textContent = text;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function sendMessage() {
+  const text = input.value.trim();
+  if (!text) return;
+  appendMessage('あなた: ' + text, 'user');
+  input.value = '';
+
+  setTimeout(() => {
+    const reply = getResponse(text);
+    appendMessage('夕介佐歩: ' + reply, 'bot');
+  }, 500);
+}
+
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+appendMessage('夕介佐歩: どうも、絵師ファンライターのサポート窓口。こちら担当の夕介佐歩です。操作や投稿などで分からないことがあれば、なんでもどうぞ。', 'bot');
+</script>
+</body>
+</html>
