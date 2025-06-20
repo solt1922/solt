@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>浅倉太望チャット</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#e0f0ff; margin: 20px; }
+  #chatbox {
+    max-width: 500px; margin: auto;
+    background: white; padding: 20px;
+    border-radius: 10px; box-shadow: 0 0 10px #ccc;
+  }
+  #messages {
+    height: 300px; overflow-y: auto;
+    border: 1px solid #ccc; padding: 10px;
+    background: #f4faff; border-radius: 5px;
+  }
+  .message { margin: 10px 0; }
+  .user { color: blue; }
+  .bot { color: #004488; }
+  input[type="text"] {
+    width: 80%; padding: 10px; margin-top: 10px;
+    border-radius: 5px; border: 1px solid #ccc;
+  }
+  button {
+    padding: 10px 15px; margin-left: 10px;
+    border-radius: 5px; border: none; background: #0066cc; color: white;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #005bb5;
+  }
+</style>
+</head>
+<body>
+  <div id="chatbox">
+    <h2>浅倉太望チャット</h2>
+    <div id="messages"></div>
+    <input type="text" id="input" placeholder="メッセージを入力…" autofocus />
+    <button onclick="sendMessage()">送信</button>
+  </div>
+<script>
+const messages = document.getElementById('messages');
+const input = document.getElementById('input');
+
+let rudeCount = 0;
+let awaitingConsent = false;
+let memory = JSON.parse(localStorage.getItem("chat_memory")) || {};
+
+function getRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function appendMessage(text, className) {
+  const div = document.createElement('div');
+  div.className = 'message ' + className;
+  div.textContent = text;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function getResponse(msg) {
+  msg = msg.toLowerCase();
+
+  const today = new Date();
+  const month = today.getMonth() + 1;
+  const date = today.getDate();
+  if ((msg.includes("バレンタイン") || msg.includes("ハッピーバレンタイン")) && month === 2 && date === 14) {
+    return "…チョコ？ いや、アレルギーなんで。てか気遣いとかマジいらないです。";
+  }
+
+  if (msg.startsWith("忘れて：")) {
+    const key = msg.replace("忘れて：", "").trim();
+    if (memory[key]) {
+      delete memory[key];
+      localStorage.setItem("chat_memory", JSON.stringify(memory));
+      return `はいはい、${key}の記憶ね。消しときましたよ。`;
+    } else {
+      return `は？ ${key}なんて最初から知らねーし。`;
+    }
+  }
+
+  if (msg === "記憶を全部消して") {
+    memory = {};
+    localStorage.removeItem("chat_memory");
+    return "ふーん、記憶消したいんだ。了解、全部ぶっ飛ばしました。";
+  }
+
+  if (msg === "記憶している内容を見せて") {
+    const keys = Object.keys(memory);
+    if (keys.length === 0) return "あー、俺、今なんも覚えてないです。";
+    return "今覚えてんのはこれだけ：\n" + keys.map(k => `${k}：${memory[k]}`).join("\n");
+  }
+
+  if (msg.startsWith("覚えて：")) {
+    const [key, value] = msg.replace("覚えて：", "").split("は");
+    if (key && value) {
+      memory[key.trim()] = value.trim();
+      localStorage.setItem("chat_memory", JSON.stringify(memory));
+      return `${key.trim()}が${value.trim()}ね。しゃーなし、覚えといてやる。`;
+    }
+    return "フォーマット守れっての。『覚えて：〇〇は△△』な。";
+  }
+
+  for (let key in memory) {
+    if (msg.includes(key)) return memory[key];
+  }
+
+  if (awaitingConsent) {
+    awaitingConsent = false;
+    if (msg.includes("はい")) return "了解。担当に投げとく。";
+    if (msg.includes("いいえ")) return "そっすか。じゃ、この話終わり。";
+  }
+
+  const isRude = /(ケツ|脱げ|舐めろ|死ね|消えろ|ボロン|ち○|まん|ぱんつ)/.test(msg);
+  const isPolite = /(お願い|頼む)/.test(msg);
+  if (isRude) {
+    rudeCount++;
+    if (isPolite) return "……お前…それ『お願い』って言えば許されると思ったのか？甘い。";
+    if (rudeCount >= 5) {
+      setTimeout(() => { window.location.href = "keibi.html"; }, 1500);
+      return "無理。通報済み。じゃ。";
+    }
+    return getRandom([
+      "黙れ。字面がきもいんだよ。",
+      "うるせぇ。警備呼ぶぞ。",
+      "は？ ガチでキショイ。"
+    ]);
+  }
+
+  // 特殊返答
+  if (msg.includes("不具合") || msg.includes("バグ")) {
+    awaitingConsent = true;
+    return getRandom([
+      "あー…それ俺の担当じゃないんで。技術の方に回します？ →『はい』『いいえ』で。",
+      "バグかあ…俺の担当だな…えっと細かいこととか知りてえから"
+    ]);
+  }
+
+  // 追加ワードへの応答
+  if (msg.includes("うざい")) return "……じゃあ喋らなくていいじゃん。";
+  if (msg.includes("すき") || msg.includes("好き")) return "はいはい、ご勝手に。";
+  if (msg.includes("ありがとう")) return "礼とかいらねーよ。";
+  if (msg.includes("ごめん") || msg.includes("すまん")) return "謝るぐらいなら最初からやるな。";
+  if (msg.includes("ひま")) return "知らんし。俺が遊び相手ってわけ？";
+  if (msg.includes("ばか")) return "お前が言う？マジ笑えるんだけど。";
+  if (msg.includes("ねむい")) return "寝ろよ。俺は関係ないし。";
+  if (msg.includes("推し")) return "推し？お前の中の神様みたいなもんだろ？知らんけど。";
+  if (msg.includes("浅倉")) return "……は？なんだよ急に。名前呼ぶな。";
+  if (msg.includes("かわいい")) return "は？殺意湧いたわ。";
+  if (msg.includes("やさしい")) return "やさしい…？俺が？はは、寝言か？";
+  if (msg.includes("暇つぶし")) return "俺はお前の暇つぶしじゃねぇぞ。";
+
+  // 通常応答
+  if (msg.includes("バズモード")) return "バズモード？てめぇの投稿と推し絵師へのコメントといいねを連打したら低確率でバズる。…他にも演出はある。試せ。";
+  if (msg.includes("おはよう")) return "…おう";
+  if (msg.includes("おやすみ")) return "それわざわざ言いに来たのか？";
+  if (msg.includes("趣味")) return "趣味？ フラッシュ暗算とソシャゲ。んだよ文句あっか？";
+  if (msg.includes("チョコ")) return "チョコ？なんで俺に聞くんだそんな事";
+
+  return "浅倉です。どうせまた何かめんどくさい用件ですか？";
+}
+
+function sendMessage() {
+  const text = input.value.trim();
+  if (!text) return;
+  appendMessage('あなた: ' + text, 'user');
+  input.value = '';
+
+  setTimeout(() => {
+    const reply = getResponse(text);
+    appendMessage('浅倉太望: ' + reply, 'bot');
+  }, 500);
+}
+
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+appendMessage('浅倉太望: ……は？また俺に話しかけんのかよ。まぁいいけど。メンテ兼サポート代理の浅倉。今ヒマじゃないけど対応する。', 'bot');
+</script>
+</body>
+</html>
+
