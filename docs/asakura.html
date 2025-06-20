@@ -40,6 +40,22 @@
     <button onclick="sendMessage()">送信</button>
   </div>
 <script>
+  <script>
+// 🌅 朝になったら強制佐歩交代（6:00〜）
+(function() {
+  const now = new Date();
+  const hour = now.getHours();
+  const today = now.toISOString().split("T")[0];
+  const lastBack = localStorage.getItem("lastMorningReturn");
+
+  if (hour >= 6 && lastBack !== today) {
+    localStorage.setItem("lastMorningReturn", today);
+    alert("…ようやく朝かよ。じゃあ佐歩にかわっとくわ。\n俺の出番はここまでな。");
+    window.location.href = "index.html"; // ←佐歩くんのページ名に合わせて変更してね
+  }
+})();
+
+  
 const messages = document.getElementById('messages');
 const input = document.getElementById('input');
 
