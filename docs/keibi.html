@@ -46,7 +46,7 @@
     <div id="messages"></div>
     <input type="text" id="input" placeholder="反省の言葉を述べなさい…" autofocus />
     <button onclick="sendMessage()">送信</button>
-    <button onclick="showReflectionForm()">📝 反省文を書く</button>
+    <button onclick="showReflectionForm()">🗒 反省文を書く</button>
 
     <div id="reflection-form" style="display: none;">
       <textarea id="reflection-text" rows="4" placeholder="ここに反省文を書きなさい…"></textarea>
@@ -57,6 +57,8 @@
 <script>
 const messages = document.getElementById('messages');
 const input = document.getElementById('input');
+let visitCount = Number(localStorage.getItem('visitCount') || 0) + 1;
+localStorage.setItem('visitCount', visitCount);
 
 function appendMessage(text, className) {
   const div = document.createElement('div');
@@ -69,116 +71,6 @@ function appendMessage(text, className) {
 function getRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
-  // 単語ごとに怒り返答を用意
-  const greetingRepliesMap = {
-    "ねえねえ": [
-      "ねえねえだと？ふざけるな、ちゃんと反省する気があるのかお前は",
-      "そんな軽い呼び方をするんでない…反省しろ"
-    ],
-    "警備員さん": [
-      "…………癪に障る",
-      "俺はどうでもいいからさっさと反省文を書け"
-    ],
-    "こんにちは": [
-      "今は挨拶してる暇じゃないだろちゃんと反省してくれ……",
-      "こんにちは……って能天気すぎるだろお前……"
-    ],
-    "こんばんわ": [
-      "夜でも説教は終わらないぞ、さっさと反省文を書くんだ"
-    ],
-    "また会いましたね": [
-      "また会ったってことは反省してないってことなんだが…改心したんじゃなかったのか…貴様…",
-      "またお前か……もう何回目なんだよ………こっちも遊びじゃないんだ"
-    ],
-  };
-
-function getKeibiResponse(msg) {
-  msg = msg.toLowerCase();
-
-  const vulgarWords = ["ち○こ", "ま○こ", "ボロン", "ケツ", "脱げ", "舐めろ", "セックス", "乳", "勃起","アナル", "肉便器", "性奴隷"];
-  const offensiveWords = ["殺す", "死ね", "ぶっ殺す", "変態", "くそ", "ふざけ", "うんこ", "ざけんな", "ボケ", "カス", "野糞"];
-
-  const isVulgar = vulgarWords.some(word => msg.includes(word));
-  const isOffensive = offensiveWords.some(word => msg.includes(word));
-
-  if (isVulgar) {
-    return getRandom([
-      "……下品にも程があるぞ。",
-      "そういう言葉は口にするなって言ってるだろうが！",
-      "お前の語彙力が心配になるぞ、マジで。",
-      "そんな発言をここで吐くな、恥を知れ。"
-    ]);
-  }
-
-  if (isOffensive) {
-    return getRandom([
-      "貴様、誰に向かって口を利いている！",
-      "暴言は即アウト。説教追加な。",
-      "お前、またやったな？根性叩き直すぞ。",
-      "その暴言、録音済みだ。覚悟しろ。"
-    ]);
-  }
-
-  if (msg.includes("ごめんなさい") || msg.includes("反省")) {
-    return getRandom([
-      "反省してるなら態度で示してもらおうか。",
-      "反省文を3枚書いて提出だ。",
-      "その程度の謝罪では済まされないぞ。",
-      "声が小さい！もっと大きく反省の意を表せ！"
-    ]);
-  }
-
-  if (msg.includes("許して") || msg.includes("ゆるして")) {
-    return getRandom([
-      "簡単に許されると思うなよ？",
-      "……まあ、今回は見逃してやろう。",
-      "許しを乞う前にやるべきことがあるはずだ。",
-      "条件付きでなら許す。次はないと思え。"
-    ]);
-  }
-
-  if (msg.includes("なんで") || msg.includes("どうして")) {
-    return getRandom([
-      "己の行動をよく思い出してみろ。",
-      "理由は貴様の言動すべてにある。",
-      "規則に従わぬ者に理由など不要だ。",
-      "言わせるな…恥を知れ。"
-    ]);
-  }
-
-  if (msg.includes("黙れ") || msg.includes("うるさい")) {
-    return getRandom([
-      "反省する気がないようだな？追加で30分だ。",
-      "敬意の欠片もないな……やり直しだ。",
-      "口答えか？よし、説教2倍モード突入だ。",
-      "貴様、今なんと言った？"
-    ]);
-  }
-
-  return getRandom([
-    "黙って聞け。ここは説教部屋だ。",
-    "余計なことは言うな。反省だけしていろ。",
-    "こっちは暇じゃない。早く改心しろ。",
-    "おしゃべりの時間じゃないぞ。真面目にやれ。",
-    "まずは落ち着け。深呼吸からだ。"
-  ]);
-}
-
-function sendMessage() {
-  const text = input.value.trim();
-  if (!text) return;
-  appendMessage('あなた: ' + text, 'user');
-  input.value = '';
-
-  setTimeout(() => {
-    const reply = getKeibiResponse(text);
-    appendMessage('警備員: ' + reply, 'keibi');
-  }, 500);
-}
-
-function showReflectionForm() {
-  document.getElementById('reflection-form').style.display = 'block';
-}
 
 function submitReflection() {
   const text = document.getElementById('reflection-text').value.trim();
@@ -186,14 +78,12 @@ function submitReflection() {
     alert("反省文が空です！");
     return;
   }
-
   appendMessage("あなた（反省文）: " + text, 'user');
   document.getElementById('reflection-text').value = '';
   document.getElementById('reflection-form').style.display = 'none';
 
   const vulgarWords = ["ち○こ", "ま○こ", "ボロン", "ケツ", "脱げ", "舐めろ", "セックス", "乳", "勃起", "アナル"];
   const offensiveWords = ["殺す", "死ね", "ぶっ殺す", "変態", "くそ", "ふざけ", "うんこ", "ざけんな"];
-
   const isVulgar = vulgarWords.some(word => text.includes(word));
   const isOffensive = offensiveWords.some(word => text.includes(word));
 
@@ -213,22 +103,33 @@ function submitReflection() {
         "暴言を反省文に混ぜるな。即却下。"
       ]), 'keibi');
     } else {
-      appendMessage("警備員: " + getRandom([
-        "ふむ、よく書けている。今回は見逃してやろう。",
-        "その反省文ではまだ足りん。もっと真剣に書け！",
-        "……うむ。その気持ちがあるならよし。",
-        "だいぶ反省の色は見えたな。次は気をつけろ。"
-      ]), 'keibi');
+      let replyPool = [];
+      if (visitCount <= 2) {
+        replyPool = [
+          "ふむ、よく書けている。今回は見逃してやろう。",
+          "その反省文ではまだ足りん。もっと真剣に書け！",
+          "……うむ。その気持ちがあるならよし。",
+          "だいぶ反省の色は見えたな。次は気をつけろ。"
+        ];
+      } else if (visitCount <= 4) {
+        replyPool = [
+          "何度目の反省文だよ……書き慣れてる感あるな。",
+          "字面だけじゃダメだ。本気で書いてるか？",
+          "またこの程度か……仕方ない、読んではやる。",
+          "お前の反省文、毎回同じように見えるぞ。"
+        ];
+      } else {
+        replyPool = [
+          "なめてんのか？却下だ。やり直せ。",
+          "何回同じ反省文書いてんだよ。心がこもってねえ。",
+          "読みたくない。気持ちが伝わってこないんだよ。",
+          "はあ……何回目？形だけの謝罪はいらん。"
+        ];
+      }
+      appendMessage("警備員: " + getRandom(replyPool), 'keibi');
     }
   }, 700);
 }
-
-input.addEventListener('keydown', e => {
-  if (e.key === 'Enter') sendMessage();
-});
-
-// 初期メッセージ
-appendMessage('警備員: さてと、よう犯罪者さんよ。お前にはここで態度を改めてもらう。', 'keibi');
 </script>
 </body>
 </html>
