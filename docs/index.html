@@ -39,18 +39,25 @@
     <input type="text" id="input" placeholder="メッセージを入力…" autofocus />
     <button onclick="sendMessage()">送信</button>
   </div>
-<script>
-// 浅倉モード判定（30日に1回、確率で切り替え）
-(function() {
-  const now = new Date();
-  const last = new Date(localStorage.getItem("lastAsakura") || 0);
-  const days = (now - last) / (1000 * 60 * 60 * 24);
 
-  if (days >= 30 && Math.random() < 0.5) { // 月1の確率（例：50%）
-    localStorage.setItem("lastAsakura", now.toISOString());
-    window.location.href = "asakura.html";
-  }
-})();
+<script>
+// 🌡️ 風邪モード管理（月に1回あるかないかの確率）
+const KAZE_CHANCE = 0.03;
+const KAZE_DURATION_HOURS = 24;
+let isKazeMode = false;
+
+const now = new Date();
+const kazeData = JSON.parse(localStorage.getItem("kaze_saho") || "{}");
+
+if (!kazeData.timestamp || (now - new Date(kazeData.timestamp)) > KAZE_DURATION_HOURS * 60 * 60 * 1000) {
+  isKazeMode = Math.random() < KAZE_CHANCE;
+  localStorage.setItem("kaze_saho", JSON.stringify({
+    timestamp: now.toISOString(),
+    active: isKazeMode
+  }));
+} else {
+  isKazeMode = kazeData.active;
+}
 </script>
 
 <script>
@@ -67,16 +74,16 @@ function getRandom(arr) {
 
 function getResponse(msg) {
   msg = msg.toLowerCase();
-
-  // 🎉 バレンタインデー演出
   const today = new Date();
   const month = today.getMonth() + 1;
   const date = today.getDate();
+
   if ((msg.includes("バレンタイン") || msg.includes("ハッピーバレンタイン")) && month === 2 && date === 14) {
-    return "あ…ありがとうございます……でもチョコは遠慮しておきます…アレルギーなので…お気持ちだけで十分です…";
+    return isKazeMode
+      ? "うぅ…バレンタインですか…すいません…チョコはちょっと…アレルギーで…"
+      : "あ…ありがとうございます……でもチョコは遠慮しておきます…アレルギーなので…お気持ちだけで十分です…";
   }
 
-  // 記憶削除系
   if (msg.startsWith("忘れて：")) {
     const key = msg.replace("忘れて：", "").trim();
     if (memory[key]) {
@@ -87,18 +94,18 @@ function getResponse(msg) {
       return `${key}の記憶は見つかりませんでした。`;
     }
   }
+
   if (msg === "記憶を全部消して") {
     memory = {};
     localStorage.removeItem("chat_memory");
     return "すべての記憶を削除しました。";
   }
+
   if (msg === "記憶している内容を見せて") {
     const keys = Object.keys(memory);
-    if (keys.length === 0) return "今は何も覚えていません。";
-    return "現在の記憶は以下の通りです：\n" + keys.map(k => `${k}：${memory[k]}`).join("\n");
+    return keys.length === 0 ? "今は何も覚えていません。" : "現在の記憶は以下の通りです：\n" + keys.map(k => `${k}：${memory[k]}`).join("\n");
   }
 
-  // 記憶追加
   if (msg.startsWith("覚えて：")) {
     const [key, value] = msg.replace("覚えて：", "").split("は");
     if (key && value) {
@@ -109,30 +116,28 @@ function getResponse(msg) {
     return "「覚えて：〇〇は△△」の形式で入力してください。";
   }
 
-  // 記憶参照
   for (let key in memory) {
     if (msg.includes(key)) return memory[key];
   }
 
-  // 同意処理
   if (awaitingConsent) {
     awaitingConsent = false;
-    if (msg.includes("はい")) return "わかりました。担当に連絡しておきますね。";
-    if (msg.includes("いいえ")) return "承知しました。何かあればまたお知らせください。";
+    return msg.includes("はい")
+      ? "わかりました。担当に連絡しておきますね。"
+      : "承知しました。何かあればまたお知らせください。";
   }
 
-  // 🚨 セクハラ・暴言検出
   const isRude = /(ケツ|脱げ|舐めろ|死ね|消えろ|ボロン|ち○|まん|ぱんつ)/.test(msg);
   const isPolite = /(お願い|頼む)/.test(msg);
   if (isRude) {
     rudeCount++;
     if (isPolite) {
-      return "うっ……//すいませんが…そういうお願いはちょっと………うちそういうサービスじゃないので…";
+      return isKazeMode
+        ? "うぅ…そ、そういうのは…ちょっと……風邪で対応できません…"
+        : "すいませんが…そういうお願いはちょっと………うちそういうサービスじゃないので…";
     }
     if (rudeCount >= 5) {
-      setTimeout(() => {
-        window.location.href = "keibi.html";
-      }, 1500);
+      setTimeout(() => { window.location.href = "keibi.html"; }, 1500);
       return "無理ですってば…本当にやめてください…警備の者を呼びます…";
     }
     return getRandom([
@@ -142,7 +147,6 @@ function getResponse(msg) {
     ]);
   }
 
-  // その他の返答
   if (msg.includes("不具合") || msg.includes("バグ")) {
     awaitingConsent = true;
     return getRandom([
@@ -155,12 +159,14 @@ function getResponse(msg) {
     return "バズモードは推し絵師へのコメントやいいねで演出が変化します。詳細は試してみてください。";
   }
 
-  if (msg.includes("おはよう")) return "おはようございます。";
-  if (msg.includes("おやすみ")) return "おやすみなさい。";
+  if (msg.includes("おはよう")) return isKazeMode ? "……おはようございます……ちょっと熱があって…" : "おはようございます。";
+  if (msg.includes("おやすみ")) return isKazeMode ? "おやすみなさい…あったかくして休んでくださいね…" : "おやすみなさい。";
   if (msg.includes("趣味")) return "趣味は筋トレと料理です。料理は…下手ですが。";
   if (msg.includes("チョコ")) return "チョコはアレルギーなので…お気持ちだけで。";
 
-  return "どうも、絵師ファンライターのサポート窓口。こちら担当の夕介佐歩です。";
+  return isKazeMode
+    ? "すみません…ちょっと風邪気味で…対応が遅れたらごめんなさい……"
+    : "どうも、絵師ファンライターのサポート窓口。こちら担当の夕介佐歩です。";
 }
 
 function appendMessage(text, className) {
@@ -187,7 +193,11 @@ input.addEventListener('keydown', e => {
   if (e.key === 'Enter') sendMessage();
 });
 
-appendMessage('夕介佐歩: どうも、絵師ファンライターのサポート窓口。こちら担当の夕介佐歩です。操作や投稿などで分からないことがあれば、なんでもどうぞ。', 'bot');
+// 初回メッセージ
+appendMessage(isKazeMode
+  ? '夕介佐歩: ……どうも、サポート担当の夕介佐歩です……すみません…本日ちょっと風邪気味でして……'
+  : '夕介佐歩: どうも、絵師ファンライターのサポート窓口。こちら担当の夕介佐歩です。操作や投稿などで分からないことがあれば、なんでもどうぞ。', 'bot');
 </script>
 </body>
 </html>
+
