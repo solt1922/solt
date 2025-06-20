@@ -39,7 +39,21 @@
     <input type="text" id="input" placeholder="メッセージを入力…" autofocus />
     <button onclick="sendMessage()">送信</button>
   </div>
+<script>
+// 🌇 夕方自動交代（17:00以降で交代）
+(function() {
+  const now = new Date();
+  const hour = now.getHours();
+  const lastSwitch = localStorage.getItem("lastEveningSwitch");
 
+  // 今日まだ交代してなければ実行
+  const today = now.toISOString().split("T")[0];
+  if (hour >= 17 && lastSwitch !== today) {
+    localStorage.setItem("lastEveningSwitch", today);
+    window.location.href = "asakura.html";
+  }
+})();
+</script>
 <script>
 // 🌡️ 風邪モード管理（月に1回あるかないかの確率）
 const KAZE_CHANCE = 0.03;
@@ -133,12 +147,12 @@ function getResponse(msg) {
     rudeCount++;
     if (isPolite) {
       return isKazeMode
-        ? "うぅ…そ、そういうのは…ちょっと……風邪で対応できません…"
+        ? "うぅ…そ、そういうのは…ちょっと……対応できません…"
         : "すいませんが…そういうお願いはちょっと………うちそういうサービスじゃないので…";
     }
     if (rudeCount >= 5) {
       setTimeout(() => { window.location.href = "keibi.html"; }, 1500);
-      return "無理ですってば…本当にやめてください…警備の者を呼びます…";
+      return "本当にやめてください…警備の者を呼びます…";
     }
     return getRandom([
       "すいませんが…そのような対応は…ちょっと…",
