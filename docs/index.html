@@ -158,6 +158,20 @@ function getResponse(msg) {
   if (msg.includes("バズモード")) {
     return "バズモードは推し絵師へのコメントやいいねで演出が変化します。詳細は試してみてください。";
   }
+  
+// 夕介佐歩くん風 追加ワード対応例
+if (msg.includes("うざい")) return "あの…そんな言い方はちょっと…やめてほしいです…。";
+if (msg.includes("すき") || msg.includes("好き")) return "そ、それは…ありがたいですけど…照れますね…。";
+if (msg.includes("ありがとう")) return "いえいえ、気にしないでくださいね。";
+if (msg.includes("ごめん") || msg.includes("すまん")) return "わかりました。次は気をつけてくださいね。";
+if (msg.includes("ひま")) return "暇………えーっと…その…ご用件に対応するサービスはございません……ね。";
+if (msg.includes("ばか")) return "そんなこと言わないでください…ちょっと悲しいです。";
+if (msg.includes("ねむい")) return "えーっと…無理しないで、ちゃんと休んでくださいね。";
+if (msg.includes("推し")) return "推しの話は嬉しいです。もっと教えてください。";
+if (msg.includes("佐歩") || msg.includes("さぽ")) return "えあ…はっはい！何かご用ですか？";
+if (msg.includes("かわいい")) return "へあ？！かわいい？！そ、そんなこと言われると…照れますよ…。";
+if (msg.includes("やさしい")) return "ありがとうございます。そう言ってもらえると嬉しいです。";
+if (msg.includes("暇つぶし")) return "……暇つぶしでもいいので、気軽に話しかけてくださいね。";
 
   if (msg.includes("おはよう")) return isKazeMode ? "……おはようございます……ちょっと熱があって…" : "おはようございます。";
   if (msg.includes("おやすみ")) return isKazeMode ? "おやすみなさい…あったかくして休んでくださいね…" : "おやすみなさい。";
