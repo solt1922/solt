@@ -240,6 +240,20 @@ appendMessage(isKazeMode
   ? '夕介佐歩: ……どうも、サポート担当の夕介佐歩です……すみません…本日ちょっと風邪気味でして……'
   : '夕介佐歩: どうも、絵師ファンライターのサポート窓口。こちら担当の夕介佐歩です。操作や投稿などで分からないことがあれば、なんでもどうぞ。', 'bot');
 </script>
+<script>
+(function() {
+  const now = new Date();
+  const hour = now.getHours();
+  const lastSwitch = localStorage.getItem("lastEveningSwitch");
+  const today = now.toISOString().split("T")[0];
+
+  if (hour >= 17 && lastSwitch !== today) {
+    localStorage.setItem("lastEveningSwitch", today);
+    alert("……17時になりました。本日分の対応は浅倉に引き継ぎます。");
+    window.location.href = "asakura.html";
+  }
+})();
+</script>
 </body>
 </html>
 
