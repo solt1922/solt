@@ -40,6 +40,22 @@
     <button onclick="sendMessage()">送信</button>
   </div>
 <script>
+// 🌇 夕方判定（17時以降で佐歩から来た場合の交代チェック）
+(function() {
+  const now = new Date();
+  const hour = now.getHours();
+  const today = now.toISOString().split("T")[0];
+  const lastSwitch = localStorage.getItem("lastEveningSwitch");
+
+  if (hour >= 17 && lastSwitch !== today) {
+    localStorage.setItem("lastEveningSwitch", today);
+    alert("…17時かよ。じゃあ俺の出番だな。");
+    // 太望チャットがすでに表示中だから何もせずに続行
+    // 必要ならここで任意の初回演出を挿入できる
+  }
+})();
+</script>
+<script>
 // 🌅 朝になったら強制佐歩交代（6:00〜）
 (function() {
   const now = new Date();
@@ -194,6 +210,9 @@ input.addEventListener('keydown', e => {
 });
 
 appendMessage('浅倉太望: ……は？また俺に話しかけんのかよ。まぁいいけど。メンテ兼サポート代理の浅倉。今ヒマじゃないけど対応する。', 'bot');
+</script>
+<script>
+appendMessage("浅倉太望: ……チッ。17時か。ったく、毎日毎日定時交代とかマジダルいわ。", 'bot');
 </script>
 </body>
 </html>
