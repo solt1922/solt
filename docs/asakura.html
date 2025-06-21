@@ -39,34 +39,19 @@
     <input type="text" id="input" placeholder="メッセージを入力…" autofocus />
     <button onclick="sendMessage()">送信</button>
   </div>
+
 <script>
-// 🌇 夕方判定（17時以降で佐歩から来た場合の交代チェック）
+// 🌅 朝6時に佐歩へ交代
 (function() {
   const now = new Date();
   const hour = now.getHours();
   const today = now.toISOString().split("T")[0];
-  const lastSwitch = localStorage.getItem("lastEveningSwitch");
+  const lastReturn = localStorage.getItem("lastMorningReturn");
 
-  if (hour >= 17 && lastSwitch !== today) {
-    localStorage.setItem("lastEveningSwitch", today);
-    alert("…17時かよ。じゃあ俺の出番だな。");
-    // 太望チャットがすでに表示中だから何もせずに続行
-    // 必要ならここで任意の初回演出を挿入できる
-  }
-})();
-</script>
-<script>
-// 🌅 朝になったら強制佐歩交代（6:00〜）
-(function() {
-  const now = new Date();
-  const hour = now.getHours();
-  const today = now.toISOString().split("T")[0];
-  const lastBack = localStorage.getItem("lastMorningReturn");
-
-  if (hour >= 6 && lastBack !== today) {
+  if (hour >= 6 && lastReturn !== today) {
     localStorage.setItem("lastMorningReturn", today);
-    alert("…ようやく朝かよ。じゃあ佐歩にかわっとくわ。\n俺の出番はここまでな。");
-    window.location.href = "index.html"; // ←佐歩くんのページ名に合わせて変更してね
+    alert("…ようやく朝かよ。じゃあ佐歩にかわっとくわ。俺の出番はここまでな。");
+    window.location.href = "saho.html";
   }
 })();
 </script>
@@ -74,7 +59,6 @@
 <script>
 const messages = document.getElementById('messages');
 const input = document.getElementById('input');
-
 let rudeCount = 0;
 let awaitingConsent = false;
 let memory = JSON.parse(localStorage.getItem("chat_memory")) || {};
@@ -93,12 +77,12 @@ function appendMessage(text, className) {
 
 function getResponse(msg) {
   msg = msg.toLowerCase();
-
   const today = new Date();
   const month = today.getMonth() + 1;
   const date = today.getDate();
+
   if ((msg.includes("バレンタイン") || msg.includes("ハッピーバレンタイン")) && month === 2 && date === 14) {
-    return "…チョコ？ いや、アレルギーなんで。てか気遣いとかマジいらないです。";
+    return "…チョコ？ いや、アレルギーなんで。気遣いとかいらねぇよ。";
   }
 
   if (msg.startsWith("忘れて：")) {
@@ -106,22 +90,21 @@ function getResponse(msg) {
     if (memory[key]) {
       delete memory[key];
       localStorage.setItem("chat_memory", JSON.stringify(memory));
-      return `はいはい、${key}の記憶ね。消しときましたよ。`;
+      return `はいはい、${key}の記憶ね。消しといたから。`;
     } else {
-      return `は？ ${key}なんて最初から知らねーし。`;
+      return `は？ ${key}なんて最初から覚えてねーし。`;
     }
   }
 
   if (msg === "記憶を全部消して") {
     memory = {};
     localStorage.removeItem("chat_memory");
-    return "ふーん、記憶消したいんだ。了解、全部ぶっ飛ばしました。";
+    return "全部消したぞ。スッキリしたか？";
   }
 
   if (msg === "記憶している内容を見せて") {
     const keys = Object.keys(memory);
-    if (keys.length === 0) return "あー、俺、今なんも覚えてないです。";
-    return "今覚えてんのはこれだけ：\n" + keys.map(k => `${k}：${memory[k]}`).join("\n");
+    return keys.length === 0 ? "何も覚えてねーけど？" : "覚えてるのはこれだな：\n" + keys.map(k => `${k}：${memory[k]}`).join("\n");
   }
 
   if (msg.startsWith("覚えて：")) {
@@ -129,9 +112,9 @@ function getResponse(msg) {
     if (key && value) {
       memory[key.trim()] = value.trim();
       localStorage.setItem("chat_memory", JSON.stringify(memory));
-      return `${key.trim()}が${value.trim()}ね。しゃーなし、覚えといてやる。`;
+      return `${key.trim()}が${value.trim()}ね。メモっといた。`;
     }
-    return "フォーマット守れっての。『覚えて：〇〇は△△』な。";
+    return "『覚えて：〇〇は△△』って形式守れよ。";
   }
 
   for (let key in memory) {
@@ -140,57 +123,43 @@ function getResponse(msg) {
 
   if (awaitingConsent) {
     awaitingConsent = false;
-    if (msg.includes("はい")) return "了解。担当に投げとく。";
-    if (msg.includes("いいえ")) return "そっすか。じゃ、この話終わり。";
+    return msg.includes("はい") ? "了解。投げとくわ。" : "あっそ。じゃ終わり。";
   }
 
-  const isRude = /(ケツ|脱げ|舐めろ|死ね|消えろ|ボロン|ち○|まん|ぱんつ)/.test(msg);
-  const isPolite = /(お願い|頼む)/.test(msg);
-  if (isRude) {
+  if (/(ケツ|脱げ|舐めろ|死ね|消えろ|ボロン|ち○|まん|ぱんつ)/.test(msg)) {
     rudeCount++;
-    if (isPolite) return "……お前…それ『お願い』って言えば許されると思ったのか？甘い。";
     if (rudeCount >= 5) {
       setTimeout(() => { window.location.href = "keibi.html"; }, 1500);
-      return "無理。通報済み。じゃ。";
+      return "おい、もう無理。警備に回した。";
     }
     return getRandom([
-      "黙れ。字面がきもいんだよ。",
-      "うるせぇ。警備呼ぶぞ。",
-      "は？ ガチでキショイ。"
+      "黙れ。字面がキモいんだよ。",
+      "通報すんぞ。やめとけ。",
+      "うるせえ。限界だわ。"
     ]);
   }
 
-  // 特殊返答
   if (msg.includes("不具合") || msg.includes("バグ")) {
     awaitingConsent = true;
-    return getRandom([
-      "あー…それ俺の担当じゃないんで。技術の方に回します？ →『はい』『いいえ』で。",
-      "バグかあ…俺の担当だな…えっと細かいこととか知りてえから"
-    ]);
+    return "あー？不具合？担当変えるか？→『はい』か『いいえ』で答えろ。";
   }
 
-  // 追加ワードへの応答
-  if (msg.includes("うざい")) return "……じゃあ喋らなくていいじゃん。";
-  if (msg.includes("すき") || msg.includes("好き")) return "はいはい、ご勝手に。";
-  if (msg.includes("ありがとう")) return "礼とかいらねーよ。";
-  if (msg.includes("ごめん") || msg.includes("すまん")) return "謝るぐらいなら最初からやるな。";
-  if (msg.includes("ひま")) return "知らんし。俺が遊び相手ってわけ？";
-  if (msg.includes("ばか")) return "お前が言う？マジ笑えるんだけど。";
-  if (msg.includes("ねむい")) return "寝ろよ。俺は関係ないし。";
-  if (msg.includes("推し")) return "推し？お前の中の神様みたいなもんだろ？知らんけど。";
-  if (msg.includes("浅倉")) return "……は？なんだよ急に。名前呼ぶな。";
-  if (msg.includes("かわいい")) return "は？殺意湧いたわ。";
-  if (msg.includes("やさしい")) return "やさしい…？俺が？はは、寝言か？";
-  if (msg.includes("暇つぶし")) return "俺はお前の暇つぶしじゃねぇぞ。";
+  // 特殊反応
+  if (msg.includes("すき")) return "はいはい、ご勝手に。";
+  if (msg.includes("ありがとう")) return "べつに礼はいらねーよ。";
+  if (msg.includes("ばか")) return "お前が言う？笑わせんな。";
+  if (msg.includes("ねむい")) return "寝ろよ。こっち巻き込むな。";
+  if (msg.includes("浅倉")) return "……は？ 呼んだか？";
+  if (msg.includes("やさしい")) return "俺が？ は？何かの間違いだろ。";
+  if (msg.includes("かわいい")) return "てめぇ…ぶっ飛ばされてぇのか。";
+  if (msg.includes("暇つぶし")) return "俺はお前の遊び相手じゃねぇぞ。";
 
-  // 通常応答
-  if (msg.includes("バズモード")) return "バズモード？てめぇの投稿と推し絵師へのコメントといいねを連打したら低確率でバズる。…他にも演出はある。試せ。";
-  if (msg.includes("おはよう")) return "…おう";
-  if (msg.includes("おやすみ")) return "それわざわざ言いに来たのか？";
-  if (msg.includes("趣味")) return "趣味？ フラッシュ暗算とソシャゲ。んだよ文句あっか？";
-  if (msg.includes("チョコ")) return "チョコ？なんで俺に聞くんだそんな事";
+  if (msg.includes("バズモード")) return "推しへのいいね連打してみ？なんか起こるかもな。";
 
-  return "浅倉です。どうせまた何かめんどくさい用件ですか？";
+  if (msg.includes("おはよう")) return "……おう";
+  if (msg.includes("おやすみ")) return "勝手に寝てろ。";
+
+  return "浅倉です。どーせまためんどくせー用件だろ？";
 }
 
 function sendMessage() {
@@ -198,7 +167,6 @@ function sendMessage() {
   if (!text) return;
   appendMessage('あなた: ' + text, 'user');
   input.value = '';
-
   setTimeout(() => {
     const reply = getResponse(text);
     appendMessage('浅倉太望: ' + reply, 'bot');
@@ -211,9 +179,5 @@ input.addEventListener('keydown', e => {
 
 appendMessage('浅倉太望: ……は？また俺に話しかけんのかよ。まぁいいけど。メンテ兼サポート代理の浅倉。今ヒマじゃないけど対応する。', 'bot');
 </script>
-<script>
-appendMessage("浅倉太望: ……チッ。17時か。ったく、毎日毎日定時交代とかマジダルいわ。", 'bot');
-</script>
 </body>
 </html>
-
